@@ -99,6 +99,38 @@
     return !!findComposer();
   }
 
+  /** X's own "New chat" control in the drawer header, localized. */
+  const NEW_CHAT_LABEL = /新聊天|new chat/i;
+
+  function findNewChatButton() {
+    for (const el of document.querySelectorAll('button[aria-label]')) {
+      if (!NEW_CHAT_LABEL.test(el.getAttribute('aria-label') || '')) continue;
+      if (el.closest('article') || !isVisible(el)) continue;
+      return el;
+    }
+    return null;
+  }
+
+  /**
+   * Start a fresh conversation before typing. A conversation that already holds
+   * text — or one whose reply is still streaming in — keeps re-rendering the
+   * composer and swallows the write, which made a second post look like it did
+   * nothing at all.
+   */
+  async function startNewConversation({ timeoutMs = 3000 } = {}) {
+    const button = findNewChatButton();
+    if (!button) return false;
+    button.click();
+
+    const deadline = performance.now() + timeoutMs;
+    while (performance.now() < deadline) {
+      const el = findComposer();
+      if (el && readText(el) === '') return true;
+      await delay(120);
+    }
+    return false;
+  }
+
   function caretToEnd(el) {
     const selection = window.getSelection();
     if (!selection) return;
@@ -241,5 +273,5 @@
     return false;
   }
 
-  globalThis.BGAComposer = { writeIntoComposer, findComposer, openDrawer };
+  globalThis.BGAComposer = { writeIntoComposer, findComposer, openDrawer, startNewConversation };
 })();

@@ -65,6 +65,9 @@
 
   async function openDrawerAndFill(text) {
     if (await composer.openDrawer()) {
+      // A conversation that already has content (or a reply still streaming)
+      // fights the write, so always type into a fresh one.
+      await composer.startNewConversation();
       const written = await composer.writeIntoComposer(text, { ensureSpace: settings.appendSpace });
       if (!written) console.warn('[Better Grok Ask] could not prefill the Grok composer');
       return;
