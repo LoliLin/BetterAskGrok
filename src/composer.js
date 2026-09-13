@@ -71,30 +71,52 @@
    */
   const LAUNCHER_SEL = 'button[data-testid="GrokDrawerHeader"], button[aria-label="Grok"]';
 
+  /**
+   * X's floating Grok launcher at the bottom-right. It is re-rendered bare once
+   * the drawer has been used — no aria-label, no data-testid — so fall back to
+   * the single button inside the collapsed GrokDrawer bar (which is only ~57px
+   * tall, versus the expanded drawer's ~500px).
+   */
   function findLauncher() {
     for (const el of document.querySelectorAll(LAUNCHER_SEL)) {
       if (el.closest('article') || !isVisible(el)) continue;
       return el;
     }
+
+    const bar = document.querySelector('[data-testid="GrokDrawer"]');
+    if (!bar || bar.getBoundingClientRect().height > 120) return null;
+    for (const el of bar.querySelectorAll('button')) {
+      if (isVisible(el)) return el;
+    }
     return null;
   }
 
   /**
-   * Open the drawer through X's own launcher when its composer is not around.
-   * The drawer's state is judged by the composer itself: the GrokDrawer element
-   * stays mounted as an empty shell, so its presence says nothing.
+   * Make sure the drawer is actually usable. The composer is the only signal
+   * that counts: while collapsed, X keeps the GrokDrawer element around as a
+   * bottom-right bar holding the launcher, so a missing composer means collapsed.
+   *
+   * The launcher is also torn down and re-created around opening and collapsing,
+   * so it has to be waited for rather than sampled once.
    */
-  async function openDrawer({ timeoutMs = 4000 } = {}) {
-    if (findComposer()) return true;
-
-    const launcher = findLauncher();
-    if (!launcher) return false;
-    launcher.click();
-
+  async function openDrawer({ timeoutMs = 6000, pollMs = 150, maxClicks = 2 } = {}) {
     const deadline = performance.now() + timeoutMs;
+    let clicks = 0;
+
     while (performance.now() < deadline) {
       if (findComposer()) return true;
-      await delay(150);
+
+      const launcher = findLauncher();
+      if (launcher && clicks < maxClicks) {
+        clicks += 1;
+        launcher.click();
+        const settleUntil = Math.min(performance.now() + 2000, deadline);
+        while (performance.now() < settleUntil) {
+          if (findComposer()) return true;
+          await delay(pollMs);
+        }
+      }
+      await delay(pollMs);
     }
     return !!findComposer();
   }
