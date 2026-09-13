@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Better Grok Ask</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+      max-width: 44rem;
+      font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    p.lede { margin: 0 0 28px; opacity: .75; }
+    fieldset { border: 1px solid rgba(128,128,128,.4); border-radius: 10px; padding: 16px 18px 20px; margin: 0 0 20px; }
+    legend { padding: 0 6px; font-weight: 600; }
+    label.option { display: block; margin: 0 0 12px; }
+    label.option:last-child { margin-bottom: 0; }
+    label.option input { margin-right: 8px; }
+    .hint { display: block; margin: 2px 0 0 26px; font-size: .86em; opacity: .7; }
+    code { background: rgba(128,128,128,.16); border-radius: 4px; padding: 1px 5px; }
+    #status { min-height: 1.4em; font-size: .9em; opacity: .8; }
+  </style>
+</head>
+<body>
+  <h1>Better Grok Ask</h1>
+  <p class="lede">Clicking a post's Grok icon keeps X's own behaviour — the drawer opens in place with the post attached and nothing is sent — and adds <code>https://x.com/&lt;user&gt;/status/&lt;id&gt; </code> to the composer, so you can type your question and send it yourself.</p>
+
+  <fieldset>
+    <legend>Pre-fill</legend>
+    <label class="option"><input type="checkbox" id="appendSpace">
+      Add a trailing space after the post link
+      <span class="hint">Without it, the first word you type becomes part of the URL.</span>
+    </label>
+  </fieldset>
+
+  <p id="status" role="status"></p>
+  <script src="options.js"></script>
+</body>
+</html>
